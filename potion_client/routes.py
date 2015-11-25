@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import division
+from __future__ import absolute_import
 from potion_client import utils
 from potion_client import data_types
 from potion_client.exceptions import OneOfException
@@ -19,7 +21,7 @@ from potion_client.constants import *
 
 from json import dumps, loads
 from functools import partial
-from urllib.parse import urlparse
+from urlparse import urlparse
 
 import six
 import string
@@ -69,7 +71,7 @@ class LinkProxy(DynamicElement):
             return self._attributes[key].serialize(value)
         return value
 
-    def handler(self, res: requests.Response):
+    def handler(self, res):
         return res.json()
 
     def bind(self, instance):
@@ -147,7 +149,7 @@ class VoidLinkProxy(BoundedLinkProxy):
     """
     A representation of a Link. It requires a binding other then none. When resolved, it return always None.
     """
-    def handler(self, res: requests.Response):
+    def handler(self, res):
         return None
 
     @property
@@ -167,7 +169,7 @@ class CollectionLinkProxy(BoundedLinkProxy):
         self._total = 0
         self._links = links or {}
 
-    def handler(self, res: requests.Response):
+    def handler(self, res):
         try:
             self._total = int(res.headers["X-Total-Count"])
             res.links.pop("self", None)
@@ -203,7 +205,7 @@ class CollectionLinkProxy(BoundedLinkProxy):
             self._collection = self._resolve()
         return self._total
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index):
         if self._collection is None:
             self._collection = self._resolve()
 
@@ -258,7 +260,7 @@ class CollectionLinkProxy(BoundedLinkProxy):
 
 class ListLinkIterator(object):
 
-    def __init__(self, list_link: CollectionLinkProxy):
+    def __init__(self, list_link):
         if hasattr(list_link, 'first'):
             self._slice_link = list_link.first
         else:
@@ -267,7 +269,7 @@ class ListLinkIterator(object):
         self.pointer = 0
         self.total = len(self._slice_link)
 
-    def __next__(self):
+    def next(self):
         if self.pointer >= self._slice_link.slice_size:
             if hasattr(self._slice_link, 'next'):
                 self._slice_link = self._slice_link.next
@@ -323,7 +325,7 @@ class Link(object):
         self._serializer = {}
 
     @property
-    def return_type(self) -> type:
+    def return_type(self):
         if TYPE in self.target_schema:
             return utils.type_for(self.target_schema[TYPE])[0]
         elif REF in self.target_schema:
@@ -333,7 +335,7 @@ class Link(object):
             return NoneType
 
     @property
-    def input_types(self) -> type:
+    def input_types(self):
         if TYPE in self.schema:
             return utils.type_for(self.schema[TYPE])
         elif REF in self.schema:
@@ -342,7 +344,11 @@ class Link(object):
         else:
             return [NoneType]
 
-    def __call__(self, *args, binding=None, handler=None, **kwargs):
+    def __call__(self, *args, **kwargs):
+        if 'handler' in kwargs: handler = kwargs['handler']; del kwargs['handler']
+        else: handler = None
+        if 'binding' in kwargs: binding = kwargs['binding']; del kwargs['binding']
+        else: binding = None
         if REF in self.schema and self.schema[REF] == "#":
             self.schema = binding._schema
         if REF in self.target_schema and self.target_schema[REF] == "#":
@@ -361,7 +367,7 @@ class Link(object):
         base_url = binding.client.base_url
         url = "{base}{path}".format(base=base_url, path=route.path)
         if isinstance(binding, Resource):
-            url = url.format(**{k: getattr(binding, str(k)) for k in self.route.keys})
+            url = url.format(**dict((k, getattr(binding, str(k))) for k in self.route.keys))
         if url.endswith("/"):
             return url[0:-1]
         logger.debug("URL: %s" % url)
@@ -486,7 +492,7 @@ class OneOf(Attribute):
         for attr in self._attributes.values():
             try:
                 return attr.resolve(obj, client)
-            except Exception as e:
+            except Exception, e:
                 errors.append(e)
 
         raise OneOfException(errors)
@@ -500,7 +506,7 @@ class OneOf(Attribute):
         for attr in self._attributes.values():
             try:
                 return attr.serialize(obj, valid)
-            except Exception as e:
+            except Exception, e:
                 errors.append(e)
         if self.required:
             raise OneOfException(errors)
@@ -668,7 +674,7 @@ class Resource(object):
         return self._schema.get(PROPERTIES, {})
 
     @classmethod
-    def _get_property(cls, name: str, self):
+    def _get_property(cls, name, self):
         attr = cls._attributes[name]
         raw = self.instance.get(name, None)
         if raw is None:
@@ -677,21 +683,21 @@ class Resource(object):
         return attr.resolve(raw, self.client)
 
     @classmethod
-    def _set_property(cls, key: str, self, value):
+    def _set_property(cls, key, self, value):
         serialized = cls._attributes[key].serialize(value)
         self.instance[key] = serialized
 
     @classmethod
-    def _del_property(cls, name: str, self):
+    def _del_property(cls, name, self):
         self.instance.pop(name, None)
 
-    def __getattr__(self, key: str):
+    def __getattr__(self, key):
         if key.startswith("$"):
             return self.instance[key]
         else:
             getattr(super(Resource, self), key, self)
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key):
         return self.instance[key]
 
     def _ensure_instance(self):
@@ -706,7 +712,7 @@ class Resource(object):
             assert isinstance(self.update, ObjectLinkProxy), "Invalid proxy type %s" % type(self.create)
             self._update(self.update(self))
 
-    def _update(self, raw_dict: dict):
+    def _update(self, raw_dict):
         for key, value in raw_dict.items():
             if key in self._attributes and isinstance(self._attributes[key], AttributeMapped):
                 value = self._attributes[key].resolve(value, self.client)

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import absolute_import
 import json
 import re
 import string
@@ -46,11 +47,11 @@ def validate_response_status(response):
         raise HTTP_EXCEPTIONS.get(code, default_error)(HTTP_MESSAGES.get(code, default_message), response.text)
 
 
-def to_camel_case(a_string: str):
+def to_camel_case(a_string):
     return "".join([part.capitalize() for part in a_string.replace("-", "_").split("_")])
 
 
-def to_snake_case(a_string: str):
+def to_snake_case(a_string):
     return a_string[0].lower() + re.sub('([A-Z])', r'_\1', a_string[1:]).lower()
 
 
