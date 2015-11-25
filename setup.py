@@ -18,7 +18,7 @@ from __future__ import unicode_literals
 from setuptools import setup, find_packages
 
 
-requirements = ['requests>=2.5', 'jsonschema>=2.4']
+requirements = ['requests>=2.5', 'jsonschema>=2.4', 'pytz>=2015.7', 'six>=1.10.0']
 setup(
     name='potion-client',
     version='0.1.0',

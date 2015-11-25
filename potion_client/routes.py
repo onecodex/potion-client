@@ -748,8 +748,8 @@ class Resource(object):
     def factory(cls, docstring, name, schema, requests_kwargs, client):
         class_name = utils.to_camel_case(name)
 
-        resource = type(class_name, (cls, ), {})
-        resource.__doc__ = docstring
+        resource = type(str(class_name), (cls, ), {})
+        #resource.__doc__ = docstring
         resource._schema = schema
         resource.client = client
         resource._instance_links = {}

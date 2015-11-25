@@ -90,10 +90,14 @@ def validate_schema(schema, obj):
 
 
 def type_for(json_type):
+    if isinstance(json_type, unicode):
+        json_type = json_type.encode('utf-8')
+
     if isinstance(json_type, str):
         return [TYPES[json_type]]
+
     else:
-        return [TYPES[t] for t in json_type]
+        return [TYPES[t.encode('utf-8')] for t in json_type]
 
 
 def parse_uri(uri):

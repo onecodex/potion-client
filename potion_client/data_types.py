@@ -14,7 +14,8 @@
 from __future__ import division
 from __future__ import absolute_import
 import calendar
-from datetime import timezone, datetime
+from datetime import datetime
+import pytz
 
 from potion_client import utils
 
@@ -54,6 +55,6 @@ class Date(DataType):
 
     @classmethod
     def resolve(cls, obj, client):
-        return datetime.fromtimestamp(obj["$date"] / 1000, timezone.utc)
+        return datetime.fromtimestamp(obj["$date"] / 1000, pytz.utc)
 
 _handlers["$date"] = Date
