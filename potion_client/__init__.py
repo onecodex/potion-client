@@ -21,7 +21,7 @@ from potion_client.routes import Resource
 
 class Client(object):
 
-    def __init__(self, base_url="http://localhost", schema_path="/schema", **requests_kwargs):
+    def __init__(self, dl, base_url="http://localhost", schema_path="/schema", **requests_kwargs):
         self._resources = {}
         self.base_url = base_url
         self._schema_cache = {}
@@ -35,7 +35,7 @@ class Client(object):
             response = requests.get(self.base_url + desc[REF], **requests_kwargs)
             utils.validate_response_status(response)
             class_schema = response.json()
-            resource = Resource.factory(desc.get(DOC, ""), name, class_schema, requests_kwargs, self)
+            resource = Resource.factory(desc.get(DOC, ""), name, class_schema, requests_kwargs, dl, self)
             setattr(self, resource.__name__, resource)
             self._resources[name] = resource
             self._schema_cache[desc[REF]] = class_schema
@@ -64,3 +64,14 @@ class Client(object):
             return schema[key][fragment]
         else:
             return None
+
+
+class OneCodexClient(Client):
+
+     def __init__(self, base_url="http://localhost", schema_path="/schema", **requests_kwargs):
+        print "#### RUNNING DEVELOPMENT VERSION OF Potion Client ####"
+        
+        def download_file(self):
+            print "I could be downloading this file from s3 right now: {}".format(self.uri)
+
+        super(OneCodexClient, self).__init__(download_file, base_url, schema_path, **requests_kwargs)

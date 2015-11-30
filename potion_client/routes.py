@@ -26,12 +26,6 @@ from urlparse import urlparse
 import six
 import string
 import requests
-import logging
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
 
 _string_formatter = string.Formatter()
 
@@ -355,10 +349,8 @@ class Link(object):
             self.target_schema = binding._schema
         url = self.generate_url(binding, self.route)
         params = utils.dictionary_to_params(kwargs)
-        logger.debug("PARAMS: %s" % params)
         args = self._process_args(args)
         data = loads(dumps(args, cls=utils.JSONEncoder))
-        logger.debug("DATA: %s" % data)
         res = requests.request(self.method, url=url, json=data, params=params, **self.request_kwargs)
         utils.validate_response_status(res)
         return handler(res)
@@ -370,7 +362,6 @@ class Link(object):
             url = url.format(**dict((k, getattr(binding, str(k))) for k in self.route.keys))
         if url.endswith("/"):
             return url[0:-1]
-        logger.debug("URL: %s" % url)
         return url
 
     def _process_args(self, args):
@@ -745,7 +736,7 @@ class Resource(object):
     to_json = valid_instance
 
     @classmethod
-    def factory(cls, docstring, name, schema, requests_kwargs, client):
+    def factory(cls, docstring, name, schema, requests_kwargs, dl, client):
         class_name = utils.to_camel_case(name)
 
         resource = type(str(class_name), (cls, ), {})
@@ -786,5 +777,7 @@ class Resource(object):
                                                           fset=partial(resource._set_property, name),
                                                           fdel=partial(resource._del_property, name),
                                                           doc=attr.__doc__))
+        if class_name == "Sample":
+            resource.download_file = dl
 
         return resource
