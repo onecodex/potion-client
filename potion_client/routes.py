@@ -736,10 +736,20 @@ class Resource(object):
     to_json = valid_instance
 
     @classmethod
-    def factory(cls, docstring, name, schema, requests_kwargs, dl, client):
-        class_name = utils.to_camel_case(name)
+    def factory(cls, docstring, name, schema, requests_kwargs, client, extensions=None):
 
-        resource = type(str(class_name), (cls, ), {})
+        class_name = utils.to_camel_case(name)
+        bases = (cls,)
+
+        # Process the extensions    
+        if extensions is not None:
+            mixin_class = filter(lambda ext: ext.resource == class_name, extensions)
+            
+            # ensure a 1:1 Resource <-> Extension
+            if len(mixin_class) == 1:
+                bases = bases + (mixin_class[0],)
+
+        resource = type(str(class_name), bases, {})
         #resource.__doc__ = docstring
         resource._schema = schema
         resource.client = client
@@ -777,7 +787,4 @@ class Resource(object):
                                                           fset=partial(resource._set_property, name),
                                                           fdel=partial(resource._del_property, name),
                                                           doc=attr.__doc__))
-        if class_name == "Sample":
-            resource.download_file = dl
-
         return resource
