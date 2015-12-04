@@ -16,7 +16,7 @@ from __future__ import division
 from __future__ import absolute_import
 from potion_client import utils
 from potion_client import data_types
-from potion_client.exceptions import OneOfException
+from potion_client.exceptions import OneOfException, MultipleExtensionMixinException
 from potion_client.constants import *
 
 from json import dumps, loads
@@ -748,6 +748,8 @@ class Resource(object):
             # ensure a 1:1 Resource <-> Extension
             if len(mixin_class) == 1:
                 bases = bases + (mixin_class[0],)
+            elif len(mixin_class) > 1:
+                raise MultipleExtensionMixinException(mixin_class[0])
 
         resource = type(str(class_name), bases, {})
         #resource.__doc__ = docstring
