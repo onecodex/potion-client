@@ -111,6 +111,7 @@ class MockAPITestCase(MockResponseTool, TestCase):
     def create_app(self):
         app = Flask(__name__)
         app.config['SQLALCHEMY_ENGINE'] = 'sqlite://'
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
         app.test_client_class = ApiClient
         app.debug = True
         return app
