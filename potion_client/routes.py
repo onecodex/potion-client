@@ -752,7 +752,6 @@ class Resource(object):
                 raise MultipleExtensionMixinException(mixin_class[0])
 
         resource = type(str(class_name), bases, {})
-        #resource.__doc__ = docstring
         resource._schema = schema
         resource.client = client
         resource._instance_links = {}

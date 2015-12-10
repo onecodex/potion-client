@@ -26,8 +26,7 @@ class MultipleExtensionMixinException(Exception):
     def __init__(self, mixin):
         self._mixin_class = mixin
 
-    @property
-    def message(self):
+    def __str__(self):
         return "Can only apply extension mixins to API resources in a 1:1 manner (multiple for {})".format(self._mixin_class)
 
 class HTTPException(Exception):
