@@ -3,7 +3,7 @@ from potion_client_testing import MockAPITestCase
 from httmock import HTTMock
 from datetime import datetime
 import pytz
-from potion_client.exceptions import MultipleExtensionMixinException
+from potion_client.exceptions import InvalidExtensionException
 
 
 class ExtensionsTestCase(MockAPITestCase):
@@ -48,7 +48,7 @@ class ExtensionsTestCase(MockAPITestCase):
     def test_simple_foo_extension(self):
 
         class FooExtension(object):
-            resource = "Foo"
+            _extends = ["Foo"]
 
             def return_foo(self):
                 return "foo"
@@ -57,22 +57,20 @@ class ExtensionsTestCase(MockAPITestCase):
 
         with HTTMock(self.get_mock, self.post_mock):
             self.potion_client = Client(extensions=extensions)
-            self._create_foo()
-            foo = self.potion_client.Foo
-            foo_zero = foo.instances()[0]
-            self.assertEqual(foo_zero.return_foo(), "foo")
+            foo = self._create_foo()
+            self.assertEqual(foo.return_foo(), "foo")
 
-    def test_foo_and_bar_extensions(self):
+    def test_relation_extensions(self):
 
         class FooExtension(object):
-            resource = "Foo"
+            _extends = ["Foo"]
 
             def return_foo(self):
                 return "foo"
 
         class BarExtension(object):
             
-            resource = "Bar"
+            _extends = ["Bar"]
             extended_meassge = "I have been extended!"
 
             def return_foo_from_relation(self):
@@ -82,33 +80,68 @@ class ExtensionsTestCase(MockAPITestCase):
 
         with HTTMock(self.get_mock, self.post_mock):
             self.potion_client = Client(extensions=extensions)
+            
             self._create_foo()
+            foo = self.potion_client.Foo.instances()[0]
+            
+            self._create_bar(foo=foo)
+            bar = self.potion_client.Bar.instances()[0]
 
-            foo = self.potion_client.Foo
-            bar = self.potion_client.Bar
+            self.assertEqual(foo.return_foo(), "foo")
+            self.assertEqual(bar.return_foo_from_relation(), "foo")
+            self.assertEqual(bar.extended_meassge, "I have been extended!")
 
-            foo_zero = foo.instances()[0]
-            self._create_bar(foo=foo_zero)
-            bar_zero = bar.instances()[0]
-
-            self.assertEqual(foo_zero.return_foo(), "foo")
-            self.assertEqual(bar_zero.return_foo_from_relation(), "foo")
-            self.assertEqual(bar_zero.extended_meassge, "I have been extended!")
-
-    def test_double_extending_error(self):
+    def test_two_foo_extensions(self):
         
         class FooExtension(object):
-            resource = "Foo"
+            _extends = ["Foo"]
 
             def return_foo(self):
                 return "foo"
 
         class AnoterFooExtension(object):
-            resource = "Foo"
+            _extends = ["Foo"]
 
-            def return_foo(self):
+            def return_bar(self):
                 return "bar"
 
         extensions = [FooExtension, AnoterFooExtension]
+
         with HTTMock(self.post_mock, self.get_mock):
-            self.assertRaises(MultipleExtensionMixinException, Client, extensions=extensions)
+            self.potion_client = Client(extensions=extensions)
+            foo = self._create_foo()
+            self.assertEqual(foo.return_foo(), "foo")
+            self.assertEqual(foo.return_bar(), "bar")
+
+    def test_extending_foo_and_bar(self):
+
+        class FooBarExtension(object):
+            _extends = ["Foo", "Bar"]
+
+            def return_foobar(self):
+                return "fooBar"
+
+        extensions = [FooBarExtension]
+
+        with HTTMock(self.post_mock, self.get_mock):
+            self.potion_client = Client(extensions=extensions)
+            
+            self._create_foo()
+            foo = self.potion_client.Foo.instances()[0]
+            
+            self._create_bar(foo=foo)
+            bar = self.potion_client.Bar.instances()[0]
+            
+            self.assertEqual(foo.return_foobar(), "fooBar")
+            self.assertEqual(bar.return_foobar(), "fooBar")
+
+    def test_invalid_extension_error(self):
+
+        class InvalidFooExtension(object):
+
+            def return_foobar(self):
+                return "fooBar"
+
+        extensions = [InvalidFooExtension]
+        with HTTMock(self.post_mock, self.get_mock):
+            self.failUnlessRaises(InvalidExtensionException, Client, extensions=extensions)

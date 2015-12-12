@@ -16,7 +16,7 @@ from __future__ import division
 from __future__ import absolute_import
 from potion_client import utils
 from potion_client import data_types
-from potion_client.exceptions import OneOfException, MultipleExtensionMixinException
+from potion_client.exceptions import OneOfException
 from potion_client.constants import *
 
 from json import dumps, loads
@@ -739,19 +739,15 @@ class Resource(object):
     def factory(cls, docstring, name, schema, requests_kwargs, client, extensions=None):
 
         class_name = utils.to_camel_case(name)
-        bases = (cls,)
+        bases = [cls]
 
         # Process the extensions    
         if extensions is not None:
-            mixin_class = filter(lambda ext: ext.resource == class_name, extensions)
-            
-            # ensure a 1:1 Resource <-> Extension
-            if len(mixin_class) == 1:
-                bases = bases + (mixin_class[0],)
-            elif len(mixin_class) > 1:
-                raise MultipleExtensionMixinException(mixin_class[0])
+            mixin_classes = filter(lambda ext: class_name in ext._extends, extensions)
+            if len(mixin_classes) != 0:
+                bases.extend(mixin_classes)
 
-        resource = type(str(class_name), bases, {})
+        resource = type(str(class_name), tuple(bases), {})
         resource._schema = schema
         resource.client = client
         resource._instance_links = {}

@@ -15,7 +15,7 @@ from __future__ import absolute_import
 import requests
 from .constants import *
 from potion_client import utils
-from potion_client.exceptions import NotFoundException
+from potion_client.exceptions import NotFoundException, InvalidExtensionException
 from potion_client.routes import Resource
 
 
@@ -26,6 +26,12 @@ class Client(object):
         self._resources = {}
         self.base_url = base_url
         self._schema_cache = {}
+
+        # validate the extentions
+        if extensions is not None:
+            for ext in extensions:
+                if not hasattr(ext, "_extends"):
+                    raise InvalidExtensionException(ext)
 
         response = requests.get(base_url+schema_path, **requests_kwargs)
         utils.validate_response_status(response)

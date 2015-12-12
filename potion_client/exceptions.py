@@ -21,13 +21,13 @@ class OneOfException(Exception):
     def message(self):
         return "Caused by one of %s" % ([str(e) for e in self._errors])
 
-class MultipleExtensionMixinException(Exception):
+class InvalidExtensionException(Exception):
     
-    def __init__(self, mixin):
-        self._mixin_class = mixin
+    def __init__(self, ext):
+        self._ext_class = ext
 
     def __str__(self):
-        return "Can only apply extension mixins to API resources in a 1:1 manner (multiple for {})".format(self._mixin_class)
+        return "Extension class: {} does not specify the required _extends array".format(self._ext)
 
 class HTTPException(Exception):
     pass
