@@ -22,7 +22,7 @@ setup(
     name='potion-client',
     version='0.1.0',
     packages=find_packages(exclude=['*test*']),
-    install_requires=['requests>=2.5', 'jsonschema>=2.4', 'six'],
+    install_requires=['requests>=2.5', 'jsonschema>=2.4', 'six', 'CacheControl'],
     setup_requires=["nose>=1.3"],
     tests_require=["Flask-Testing>=0.4", "Flask-Potion>=0.2", "Flask-SQLAlchemy>=2.0", "httmock>=1.2"],
     author='João Cardoso and Lars Schöning',

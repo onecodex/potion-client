@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import requests
+from cachecontrol import CacheControl
+
 from .constants import *
 from .exceptions import NotFoundException
 from .routes import Resource
 from . import utils
-
 
 class Client(object):
     def __init__(self, base_url="http://localhost", schema_path="/schema", **requests_kwargs):
@@ -24,13 +25,16 @@ class Client(object):
         self.base_url = base_url
         self._schema_cache = {}
 
-        response = requests.get(base_url + schema_path, **requests_kwargs)
+        sess = requests.session()
+        self.sess = CacheControl(sess)
+        response = self.sess.get(base_url + schema_path, **requests_kwargs)
+        
         utils.validate_response_status(response)
         self._schema = response.json()
         self._schema_cache[schema_path + "#"] = self._schema
 
         for name, desc in self._schema[PROPERTIES].items():
-            response = requests.get(self.base_url + desc[REF], **requests_kwargs)
+            response = self.sess.get(self.base_url + desc[REF], **requests_kwargs)
             utils.validate_response_status(response)
             class_schema = response.json()
             resource = Resource.factory(desc.get(DOC, ""), name, class_schema, requests_kwargs, self)

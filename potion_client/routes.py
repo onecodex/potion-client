@@ -21,7 +21,6 @@ from functools import partial
 from six.moves.urllib.parse import urlparse
 import six
 import string
-import requests
 import logging
 
 logger = logging.getLogger(__name__)
@@ -315,7 +314,7 @@ class Route(object):
 
 
 class Link(object):
-    def __init__(self, route, method=GET, schema=None, target_schema=None, requests_kwargs=None, docstring=None):
+    def __init__(self, route, session, method=GET, schema=None, target_schema=None, requests_kwargs=None, docstring=None):
         self.route = route
         self.method = method
         self.schema = schema
@@ -323,6 +322,7 @@ class Link(object):
         self.request_kwargs = requests_kwargs
         self.__doc__ = docstring
         self._serializer = {}
+        self.sess = session
 
     @property
     def return_type(self):
@@ -359,7 +359,7 @@ class Link(object):
         args = self._process_args(args)
         data = loads(dumps(args, cls=utils.JSONEncoder))
         logger.debug("DATA: %s" % data)
-        res = requests.request(self.method, url=url, json=data, params=params, **self.request_kwargs)
+        res = self.sess.request(self.method, url=url, json=data, params=params, **self.request_kwargs)
         utils.validate_response_status(res)
         return handler(res)
 
@@ -797,7 +797,7 @@ class Resource(object):
                 route = Route(link_desc[HREF])
                 routes[link_desc[HREF]] = route
 
-            link = Link(route, method=link_desc[METHOD], schema=link_desc.get(SCHEMA, {}),
+            link = Link(route, client.sess, method=link_desc[METHOD], schema=link_desc.get(SCHEMA, {}),
                         target_schema=link_desc.get(TARGET_SCHEMA, {}), requests_kwargs=requests_kwargs,
                         docstring=link_desc.get(DOC, None))
 
