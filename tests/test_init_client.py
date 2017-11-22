@@ -4,10 +4,10 @@ from unittest import TestCase, SkipTest
 from six.moves.urllib.parse import urlparse, parse_qs
 from requests import HTTPError
 import responses
-from potion_client import Client, Resource, PotionJSONDecoder, uri_for
-from potion_client.converter import PotionJSONEncoder, timezone
-from potion_client.collection import PaginatedList
-from potion_client.exceptions import ItemNotFound
+from oc_potion_client import Client, Resource, PotionJSONDecoder, uri_for
+from oc_potion_client.converter import PotionJSONEncoder, timezone
+from oc_potion_client.collection import PaginatedList
+from oc_potion_client.exceptions import ItemNotFound
 
 
 class ClientInitTestCase(TestCase):

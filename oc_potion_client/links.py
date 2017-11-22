@@ -1,13 +1,17 @@
-import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 import re
 
 from requests import Request
 from requests.exceptions import HTTPError
 
-from potion_client import PotionJSONDecoder
-from potion_client.collection import PaginatedList
-from potion_client.converter import PotionJSONEncoder
-from potion_client.schema import Schema
+from oc_potion_client import PotionJSONDecoder
+from oc_potion_client.collection import PaginatedList
+from oc_potion_client.converter import PotionJSONEncoder
+from oc_potion_client.schema import Schema
 
 
 class Link(object):

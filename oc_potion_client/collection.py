@@ -1,7 +1,7 @@
 import collections
 from pprint import pformat
 
-from potion_client.utils import escape
+from oc_potion_client.utils import escape
 
 
 class PaginatedList(collections.Sequence):

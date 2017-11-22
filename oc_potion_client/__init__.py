@@ -5,10 +5,10 @@ from weakref import WeakValueDictionary
 import collections
 import requests
 
-from potion_client.converter import PotionJSONDecoder, PotionJSONSchemaDecoder
-from potion_client.resource import Reference, Resource, uri_for
-from potion_client.links import Link
-from potion_client.utils import upper_camel_case, snake_case
+from oc_potion_client.converter import PotionJSONDecoder, PotionJSONSchemaDecoder
+from oc_potion_client.resource import Reference, Resource, uri_for
+from oc_potion_client.links import Link
+from oc_potion_client.utils import upper_camel_case, snake_case
 
 
 class Client(object):

@@ -6,9 +6,9 @@ import codecs
 from setuptools import setup
 
 setup(
-    name='Potion-client',
+    name='oc-potion-client',
     version='2.5.1',
-    packages=[str('potion_client')],  # https://bugs.python.org/issue13943
+    packages=[str('oc_potion_client')],  # https://bugs.python.org/issue13943
     url='https://github.com/biosustain/potion-client',
     license='MIT',
     author='Lars Schöning',

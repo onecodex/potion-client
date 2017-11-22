@@ -3,8 +3,8 @@ from pprint import pformat
 
 import six
 
-from potion_client.exceptions import ItemNotFound, MultipleItemsFound
-from potion_client.utils import escape
+from oc_potion_client.exceptions import ItemNotFound, MultipleItemsFound
+from oc_potion_client.utils import escape
 
 
 def uri_for(reference):
